@@ -1,0 +1,85 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local root = character:WaitForChild("HumanoidRootPart")
+
+local remote = ReplicatedStorage
+	:WaitForChild("Remotes")
+	:WaitForChild("InteractWithItem")
+
+-- Find AK-47 automatically
+local prisonItems = workspace:WaitForChild("Prison_ITEMS")
+local giver = prisonItems:WaitForChild("giver")
+
+local ak47 = nil
+for _, item in pairs(giver:GetChildren()) do
+	if item.Name:lower():find("ak") or item.Name:lower():find("47") then
+		for _, mesh in pairs(item:GetDescendants()) do
+			if mesh:IsA("BasePart") and mesh.Name:match("Meshes") then
+				ak47 = mesh
+				break
+			end
+		end
+		if ak47 then break end
+	end
+end
+
+if not ak47 then
+	warn("AK-47 not found! Available guns:")
+	for _, item in pairs(giver:GetChildren()) do
+		if item.Name ~= "giver" then
+			warn("  - " .. item.Name)
+		end
+	end
+end
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "GunGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Get AK-47 button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 180, 0, 50)
+button.Position = UDim2.new(0.5, -90, 0.8, 0)
+button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.TextSize = 20
+button.Font = Enum.Font.GothamBold
+button.Text = "Get AK-47"
+button.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = button
+
+-- Made by Don <3
+local credit = Instance.new("TextLabel")
+credit.Size = UDim2.new(0, 180, 0, 25)
+credit.Position = UDim2.new(0.5, -90, 0.8, 55)
+credit.BackgroundTransparency = 1
+credit.TextColor3 = Color3.fromRGB(180, 180, 180)
+credit.TextSize = 14
+credit.Font = Enum.Font.Gotham
+credit.Text = "Made by Don <3"
+credit.Parent = gui
+
+-- Get AK-47
+button.MouseButton1Click:Connect(function()
+	character = player.Character or player.CharacterAdded:Wait()
+	root = character:WaitForChild("HumanoidRootPart")
+
+	local originalCFrame = root.CFrame
+
+	-- Teleport to AK-47
+	root.CFrame = ak47.CFrame + Vector3.new(0, 3, 0)
+	task.wait(0.2)
+	remote:InvokeServer(ak47)
+
+	-- Return to original position
+	task.wait(0.2)
+	root.CFrame = originalCFrame
+end)
